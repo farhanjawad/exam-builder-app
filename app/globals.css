@@ -2,8 +2,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f7;
+  --foreground: #f24a4a;
 }
 
 @font-face {
@@ -16,10 +16,10 @@
 /* Our custom classes tagged by the Python scraper */
 @layer utilities {
   .bangla {
-    font-family: 'SutonnyMJ', sans-serif;
-    font-size: 1.25rem;
+    font-family: 'SutonnyMJ';
+    font-size: 1.1rem;
     /* Bumped up slightly to align visually with English */
-    line-height: 1.6;
+    line-height: 0.9;
   }
 
   .unicode {
@@ -28,13 +28,28 @@
   }
 
   .english {
-    font-family: 'Times New Roman', serif;
+    font-family: 'Kalpurush', serif;
   }
 
   /* Ensure math formulas don't break awkwardly across lines */
   .math {
     display: inline-block;
   }
+
+  img {
+        max-width: 60%;
+        max-height: 160px; /* Prevents diagrams from consuming half an A4 page */
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* Target specific scraper classes if they exist */
+    .math img, .question-content img {
+        margin: 0.25rem 0;
+    }
 }
 
 @theme inline {

@@ -2,28 +2,26 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../src/lib/firebase';
 import { collection, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
 
-// ⚠️ Function name MUST be strictly uppercase POST
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { title, duration, marks, questionIds, createdBy } = body;
+        const { title, duration, marks, examConfig, createdBy } = body;
 
         // Failsafe: Don't save empty exams
-        if (!questionIds || questionIds.length === 0) {
+        if (!examConfig || examConfig.length === 0) {
             return NextResponse.json({ error: "No questions provided" }, { status: 400 });
         }
 
-        // Generate a random ID (e.g., "draft_a1b2c3")
         const draftId = `draft_${Math.random().toString(36).substring(2, 8)}`;
         const draftRef = doc(collection(db, 'exam_drafts'), draftId);
 
         // Save to Firebase
         await setDoc(draftRef, {
             draftId,
-            title: title || "Untitled Exam",
-            duration: duration || "55 Minutes",
-            marks: marks || "100",
-            questionIds,
+            title: title || "গুচ্ছ মডেল টেস্ট",
+            duration: duration || "৫৫ মিনিট",
+            marks: marks || "১০০",
+            examConfig, 
             createdBy: createdBy || "IT Staff",
             createdAt: new Date().toISOString()
         });
@@ -36,14 +34,12 @@ export async function POST(request: Request) {
     }
 }
 
-// ⚠️ Function name MUST be strictly uppercase GET
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const draftId = searchParams.get('id');
 
         if (draftId) {
-            // SCENARIO 1: Fetching a single specific draft for the Print page
             const draftRef = doc(db, 'exam_drafts', draftId);
             const draftSnap = await getDoc(draftRef);
 
@@ -53,13 +49,10 @@ export async function GET(request: Request) {
                 return NextResponse.json({ error: "Draft not found" }, { status: 404 });
             }
         } else {
-            // SCENARIO 2: Fetching ALL drafts for the IT Dashboard
             const draftsRef = collection(db, 'exam_drafts');
             const querySnapshot = await getDocs(draftsRef);
             
             const drafts = querySnapshot.docs.map(doc => doc.data());
-            
-            // Sort by newest first using standard JS (bypasses Firebase index requirements)
             drafts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
             return NextResponse.json({ success: true, data: drafts }, { status: 200 });

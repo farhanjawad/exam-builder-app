@@ -34,7 +34,7 @@ export default function QuestionBank({ onAddQuestion, onAddMultiple, alreadyAdde
         const fetchQuestions = async () => {
             setLoading(true);
             try {
-                let url = `/api/exams?limit=100`;
+                let url = `/api/exams?limit=200`;
                 
                 if (selectedSource) {
                     url = `/api/exams?source=${encodeURIComponent(selectedSource)}`;
@@ -85,7 +85,7 @@ export default function QuestionBank({ onAddQuestion, onAddMultiple, alreadyAdde
                         setSelectedSource(e.target.value);
                         setSearchQuery(''); // Clear search when selecting an exam
                     }}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"
+                    className="w-full text-black p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"
                 >
                     <option value="">-- Browse all questions --</option>
                     {sources.map(src => (

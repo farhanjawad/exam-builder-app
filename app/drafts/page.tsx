@@ -55,7 +55,7 @@ export default function DraftsDashboard() {
                                 drafts.map((draft) => (
                                     <tr key={draft.draftId} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                         <td className="p-4 font-medium text-gray-800 unicode text-lg">{draft.title}</td>
-                                        <td className="p-4 text-gray-600">{draft.questionIds?.length || 0} Qs</td>
+                                        <td className="p-4 text-gray-600">{draft.examConfig?.length || 0} Qs</td>
                                         <td className="p-4 text-gray-500 flex items-center text-sm">
                                             <Calendar size={14} className="mr-2" />
                                             {new Date(draft.createdAt).toLocaleDateString()}
