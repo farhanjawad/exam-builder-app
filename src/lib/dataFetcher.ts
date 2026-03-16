@@ -1,30 +1,41 @@
 import fs from 'fs';
 import path from 'path';
 
-// Define the exact shape of your scraped question data
 export interface Question {
-    id: string; // We will generate this dynamically
-    examSource: string; // To know which file it came from
+    id: string;
+    examSource: string;
     question_html: string;
     options_html: string[];
     correct_answer_html: string;
     solution_html: string;
 }
 
-// ⚠️ IMPORTANT: Update this to match your actual GitHub repository details!
-const GITHUB_USERNAME = "YourInstitute";
-const GITHUB_REPO = "ExamRepo";
-const BRANCH = "main"; 
+// Pull repository details from your .env.local file
+const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "UnknownUser";
+const GITHUB_REPO = process.env.GITHUB_REPO || "UnknownRepo";
+const BRANCH = process.env.GITHUB_BRANCH || "main"; 
+
+// Construct the base CDN URL
+// Format: https://cdn.jsdelivr.net/gh/user/repo@branch/public/
 const CDN_BASE_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_USERNAME}/${GITHUB_REPO}@${BRANCH}/public/`;
 
 /**
- * Replaces local image paths with the blazing-fast jsDelivr CDN paths.
+ * Intercepts the raw HTML and rewrites local image paths to use the jsDelivr CDN.
  */
 function injectCDN(htmlString: string): string {
     if (!htmlString) return "";
-    // This looks for src="images/..." and swaps it to src="https://cdn.../public/images/..."
+    
+    // In development mode (localhost), keep images local so you can test offline
+    if (process.env.NODE_ENV === 'development') {
+        // Just add a leading slash so Next.js knows to look in the /public folder
+        return htmlString.replace(/src=["']images\//g, `src="/images/`);
+    }
+
+    // In production, swap local paths to the global CDN
     return htmlString.replace(/src=["']images\//g, `src="${CDN_BASE_URL}images/`);
 }
+
+// ... [The rest of your getAllQuestions() function remains exactly the same]
 
 /**
  * Reads all JSON files from the local /data/ folder and compiles them into memory.

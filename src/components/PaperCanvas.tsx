@@ -1,35 +1,44 @@
 'use client';
 
-import { useState } from 'react';
-import { Printer, Save, FileText, Settings2 } from 'lucide-react';
-import { Question } from '../lib/dataFetcher';
+import { Save, FileText, Settings, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Question } from './../lib/dataFetcher';
 import QuestionCard from './QuestionCard';
 
 interface PaperCanvasProps {
     selectedQuestions: Question[];
     onRemoveQuestion: (id: string) => void;
-    onReorder: (dragIndex: number, hoverIndex: number) => void; // Placeholder for drag-and-drop later
+    onReorder: (dragIndex: number, hoverIndex: number) => void;
+    examTitle: string;
+    setExamTitle: (v: string) => void;
+    duration: string;
+    setDuration: (v: string) => void;
+    marks: string;
+    setMarks: (v: string) => void;
 }
 
-export default function PaperCanvas({ selectedQuestions, onRemoveQuestion }: PaperCanvasProps) {
-    // Exam Header State
-    const [examTitle, setExamTitle] = useState("Weekly Evaluation Test");
-    const [duration, setDuration] = useState("45 Minutes");
-    const [marks, setMarks] = useState("50");
-    const [saving, setSaving] = useState(false);
+export default function PaperCanvas({ 
+    selectedQuestions, 
+    onRemoveQuestion,
+    onReorder,
+    examTitle, setExamTitle,
+    duration, setDuration,
+    marks, setMarks
+}: PaperCanvasProps) {
+
+    const router = useRouter();
 
     const handleSaveDraft = async () => {
         if (selectedQuestions.length === 0) {
-            alert("Add some questions before saving!");
+            alert("Please add at least one question before saving.");
             return;
         }
-        
-        setSaving(true);
+
         try {
             const payload = {
-                title: examTitle,
-                duration,
-                marks,
+                title: examTitle || "Untitled Exam",
+                duration: duration || "55 Minutes",
+                marks: marks || "100",
                 questionIds: selectedQuestions.map(q => q.id),
                 createdBy: "IT Staff" 
             };
@@ -42,94 +51,134 @@ export default function PaperCanvas({ selectedQuestions, onRemoveQuestion }: Pap
             
             const data = await res.json();
             if (data.success) {
-                alert(`Draft saved successfully! ID: ${data.draftId}`);
+                // Instantly route the teacher to the drafts dashboard after saving
+                router.push('/drafts');
             }
         } catch (error) {
             console.error("Error saving draft", error);
             alert("Failed to save draft. Check connection.");
-        } finally {
-            setSaving(false);
         }
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-100">
-            {/* Top Action Bar (Hidden during print) */}
-            <div className="bg-white p-4 border-b border-gray-200 flex justify-between items-center shadow-sm no-print sticky top-0 z-20">
-                <div className="flex items-center text-gray-700 font-semibold">
-                    <FileText className="mr-2 text-blue-600" size={20} />
-                    Current Exam ({selectedQuestions.length} Questions)
+        <div className="flex flex-col h-full bg-gray-50">
+            
+            {/* Header Action Bar */}
+            <div className="bg-white p-4 border-b border-gray-200 flex justify-between items-center shadow-sm sticky top-0 z-20">
+                <div className="flex items-center text-gray-800 font-bold text-lg">
+                    <FileText className="mr-2 text-blue-600" size={24} />
+                    Exam Workspace
                 </div>
-                <div className="flex gap-3">
-                    <button 
-                        onClick={handleSaveDraft}
-                        disabled={saving}
-                        className="flex items-center px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
-                    >
-                        <Save size={16} className="mr-2" />
-                        {saving ? "Saving..." : "Save Draft"}
-                    </button>
-                    <button 
-                        onClick={() => window.print()}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm transition-colors"
-                    >
-                        <Printer size={16} className="mr-2" />
-                        Print / PDF
-                    </button>
-                </div>
+                <button 
+                    onClick={handleSaveDraft}
+                    className="flex items-center px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow-sm transition-all"
+                >
+                    <Save size={18} className="mr-2" /> Save to Dashboard
+                </button>
             </div>
 
-            {/* The Physical Paper Canvas */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-8">
-                <div className="bg-white max-w-[210mm] mx-auto min-h-[297mm] shadow-lg print:shadow-none print:w-full print:max-w-none">
+            {/* Scrollable Workspace */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                
+                {/* Exam Configuration Card */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
+                        <Settings size={16} className="mr-2" /> Exam Settings
+                    </h2>
                     
-                    {/* Editable Exam Header */}
-                    <div className="border-b-2 border-gray-800 p-8 pb-6 mb-6 text-center">
-                        <input 
-                            type="text" 
-                            value={examTitle}
-                            onChange={(e) => setExamTitle(e.target.value)}
-                            className="text-2xl font-bold text-center w-full focus:outline-none focus:bg-gray-50 mb-4 print:bg-transparent"
-                            placeholder="Enter Exam Title..."
-                        />
-                        <div className="flex justify-between text-gray-700 font-bold border-t border-b border-gray-200 py-2 mt-4 px-4">
-                            <div className="flex items-center">
-                                <span className="mr-2 no-print"><Settings2 size={16}/></span>
-                                Time: <input type="text" value={duration} onChange={(e)=>setDuration(e.target.value)} className="w-24 ml-1 focus:outline-none print:bg-transparent bg-transparent" />
-                            </div>
-                            <div className="flex items-center">
-                                Marks: <input type="text" value={marks} onChange={(e)=>setMarks(e.target.value)} className="w-16 ml-1 text-right focus:outline-none print:bg-transparent bg-transparent" />
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="col-span-1 md:col-span-3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Exam Title</label>
+                            <input 
+                                type="text" 
+                                value={examTitle}
+                                onChange={(e)=>setExamTitle(e.target.value)}
+                                placeholder="e.g. গুচ্ছ মডেল টেস্ট"
+                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all bangla"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Total Marks</label>
+                            <input 
+                                type="text" 
+                                value={marks}
+                                onChange={(e)=>setMarks(e.target.value)}
+                                placeholder="e.g. ১০০"
+                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all bangla"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Time Allowed</label>
+                            <input 
+                                type="text" 
+                                value={duration}
+                                onChange={(e)=>setDuration(e.target.value)}
+                                placeholder="e.g. ৫৫ মিনিট"
+                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all bangla"
+                            />
                         </div>
                     </div>
-
-                    {/* Questions Area */}
-                    <div className="px-8 pb-8">
-                        {selectedQuestions.length === 0 ? (
-                            <div className="h-64 flex flex-col items-center justify-center text-gray-400 no-print border-2 border-dashed border-gray-200 rounded-lg">
-                                <FileText size={48} className="mb-4 text-gray-300" />
-                                <p>No questions added yet.</p>
-                                <p className="text-sm mt-2">Click the + icon in the Question Bank.</p>
-                            </div>
-                        ) : (
-                            selectedQuestions.map((q, index) => (
-                                <div key={q.id} className="relative group">
-                                    <div className="absolute -left-6 top-6 font-bold text-gray-600 no-print">
-                                        {index + 1}.
-                                    </div>
-                                    <span className="hidden print:inline-block absolute -left-6 top-0 font-bold text-gray-800">
-                                        {index + 1}.
-                                    </span>
-                                    <QuestionCard 
-                                        question={q} 
-                                        mode="canvas" 
-                                        onRemove={onRemoveQuestion} 
-                                    />
-                                </div>
-                            ))
-                        )}
-                    </div>
                 </div>
+
+                {/* Selected Questions List */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex justify-between items-end mb-4 border-b border-gray-100 pb-4">
+                        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+                            Selected Questions
+                        </h2>
+                        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+                            Total: {selectedQuestions.length}
+                        </span>
+                    </div>
+
+                    {selectedQuestions.length === 0 ? (
+                        <div className="h-40 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+                            <FileText size={40} className="mb-3 text-gray-300" />
+                            <p>No questions added yet.</p>
+                            <p className="text-sm mt-1">Select questions from the bank on the left.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {selectedQuestions.map((q, index) => (
+                                <div key={q.id} className="flex bg-gray-50 border border-gray-200 rounded-lg overflow-hidden hover:border-blue-300 transition-colors">
+                                    
+                                    {/* Left Status Bar / Reorder Controls */}
+                                    <div className="w-12 bg-gray-100 border-r border-gray-200 flex flex-col items-center justify-center py-2 space-y-2">
+                                        <span className="font-bold text-gray-500 text-sm mb-2">{index + 1}</span>
+                                        <button 
+                                            onClick={() => index > 0 && onReorder(index, index - 1)}
+                                            disabled={index === 0}
+                                            className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-30 transition-colors"
+                                        >
+                                            <ArrowUp size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={() => index < selectedQuestions.length - 1 && onReorder(index, index + 1)}
+                                            disabled={index === selectedQuestions.length - 1}
+                                            className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-30 transition-colors"
+                                        >
+                                            <ArrowDown size={16} />
+                                        </button>
+                                    </div>
+
+                                    {/* Question Content */}
+                                    <div className="flex-1 p-4 relative">
+                                        <button 
+                                            onClick={() => onRemoveQuestion(q.id)}
+                                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors bg-white p-1.5 rounded shadow-sm border border-gray-200"
+                                            title="Remove Question"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                        <QuestionCard question={q} mode="canvas" />
+                                    </div>
+
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
             </div>
         </div>
     );

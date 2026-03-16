@@ -17,6 +17,13 @@ export default function BuilderPage() {
         }
     };
 
+    const handleAddMultiple = (newQuestions: Question[]) => {
+        setSelectedQuestions(prev => {
+            const currentIds = new Set(prev.map(q => q.id));
+            const uniqueNewQs = newQuestions.filter(q => !currentIds.has(q.id));
+            return [...prev, ...uniqueNewQs];
+        });
+    };
     // Handler to remove a question from the exam
     const handleRemoveQuestion = (id: string) => {
         setSelectedQuestions(prev => prev.filter(q => q.id !== id));
@@ -36,25 +43,31 @@ export default function BuilderPage() {
     const alreadyAddedIds = new Set(selectedQuestions.map(q => q.id));
 
     return (
-        <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
-            
-            {/* Left Pane: Question Bank (Hidden automatically when printing) */}
-            <div className="w-full md:w-100 lg:w-112.5 shrink-0 h-full border-r border-gray-200 shadow-[2px_0_8px_rgba(0,0,0,0.05)] z-10 no-print transition-all">
-                <QuestionBank 
-                    onAddQuestion={handleAddQuestion} 
-                    alreadyAddedIds={alreadyAddedIds} 
-                />
-            </div>
+        <div className="flex h-screen w-full text-neutral-950 overflow-hidden">
+            <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
+                <div className="w-full md:w-100 lg:w-112.5 ...">
+                    <QuestionBank
+                        onAddQuestion={handleAddQuestion}
+                        onAddMultiple={handleAddMultiple}
+                        alreadyAddedIds={alreadyAddedIds}
+                    />
+                </div>
 
-            {/* Right Pane: The Exam Canvas */}
-            <div className="flex-1 h-full relative">
-                <PaperCanvas 
-                    selectedQuestions={selectedQuestions} 
-                    onRemoveQuestion={handleRemoveQuestion}
-                    onReorder={handleReorder}
-                />
+                <div className="flex-1 h-full relative">
+                    <PaperCanvas
+                        selectedQuestions={selectedQuestions}
+                        onRemoveQuestion={handleRemoveQuestion}
+                        examTitle=""
+                        setExamTitle={() => {}}
+                        duration=""
+                        setDuration={() => {}}
+                        marks=""
+                        setMarks={() => {}}
+
+                        onReorder={handleReorder}
+                    />
+                </div>
             </div>
-            
         </div>
     );
 }

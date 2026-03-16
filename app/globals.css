@@ -1,8 +1,40 @@
+@import url('https://fonts.maateen.me/kalpurush/font.css');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+@font-face {
+  font-family: 'SutonnyMJ';
+  /* Next.js automatically maps the /public/ folder to the root */
+  src: url('/fonts/SutonnyMJ.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* Our custom classes tagged by the Python scraper */
+@layer utilities {
+  .bangla {
+    font-family: 'SutonnyMJ', sans-serif;
+    font-size: 1.25rem;
+    /* Bumped up slightly to align visually with English */
+    line-height: 1.6;
+  }
+
+  .unicode {
+    font-family: 'Kalpurush', sans-serif;
+    font-weight: bold;
+  }
+
+  .english {
+    font-family: 'Times New Roman', serif;
+  }
+
+  /* Ensure math formulas don't break awkwardly across lines */
+  .math {
+    display: inline-block;
+  }
 }
 
 @theme inline {

@@ -4,6 +4,12 @@ import { useEffect, useRef } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Question } from '../lib/dataFetcher';
 
+declare global {
+    interface Window {
+        MathJax?: any;
+    }
+}
+
 interface QuestionCardProps {
     question: Question;
     mode: 'bank' | 'canvas';
@@ -64,9 +70,9 @@ export default function QuestionCard({ question, mode, onAdd, onRemove }: Questi
 
             {/* Options Grid */}
             {question.options_html && question.options_html.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-gray-950">
                     {question.options_html.map((opt, idx) => (
-                        <div key={idx} className="flex items-start bg-gray-50 p-3 rounded border border-gray-100">
+                        <div key={idx} className="flex items-start bg-black-500 p-3 rounded border border-gray-100">
                             <span className="font-bold mr-3 text-gray-500 mt-1">
                                 {String.fromCharCode(65 + idx)}.
                             </span>
@@ -91,7 +97,7 @@ export default function QuestionCard({ question, mode, onAdd, onRemove }: Questi
                 {question.solution_html && (
                     <div className="bg-[#f8fff9] p-4 rounded-r border-l-4 border-green-500 mt-3">
                         <span className="font-bold text-green-700 text-sm uppercase tracking-wide block mb-2">
-                            Solution Setup:
+                            Solution:
                         </span>
                         <div className="text-gray-700" dangerouslySetInnerHTML={{ __html: question.solution_html }} />
                     </div>
