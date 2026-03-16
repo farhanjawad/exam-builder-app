@@ -220,10 +220,9 @@ const [optionLayout, setOptionLayout] = useState<'auto' | 'grid-cols-2' | 'grid-
                                 </div>
                                 
                                 {q.options_html && q.options_html.length > 0 && (() => {
-                                    // 1. Strip HTML to count actual text characters
                                     const rawText = q.options_html.map(opt => opt.replace(/<[^>]+>/g, ''));
                                     // 2. Determine if any single option is long, or if the total length is heavy
-                                    const isLong = rawText.some(opt => opt.length > 35) || rawText.join('').length > 100;
+                                    const isLong = rawText.some(opt => opt.length > 25) || rawText.join('').length > 90;
                                     // 3. Decide the final class
                                     const layoutClass = optionLayout === 'auto' 
                                         ? (isLong ? 'grid-cols-1' : 'grid-cols-2') 
